@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="description" content="Selah Chords — letras, acordes y transporte de tonalidad.">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Selah Chords</title>
+<style>
+:root{--bg:#111;--panel:#1c1c1c;--panel2:#242424;--gold:#d6b56d;--white:#f7f5ef;--muted:#aaa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font:16px system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:18px 18px 12px;border-bottom:1px solid #333;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;background:#111;z-index:4}
+.brand{font-weight:800;letter-spacing:2px;color:var(--gold);font-size:20px}.tag{font-size:10px;letter-spacing:2px;color:#ccc}
+main{max-width:900px;margin:auto;padding:18px 14px 90px}.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:18px}
+button,select,input,textarea{font:inherit}button{border:1px solid #4a412e;background:#25231e;color:var(--white);border-radius:12px;padding:10px 13px;cursor:pointer}
+button.primary{background:var(--gold);color:#17130b;border-color:var(--gold);font-weight:700}
+button.active{background:var(--gold);color:#17130b}
+input,textarea,select{width:100%;background:#181818;border:1px solid #45413a;color:var(--white);border-radius:10px;padding:11px}
+textarea{min-height:190px;resize:vertical;line-height:1.65}
+label{display:block;color:var(--gold);font-size:13px;margin:12px 0 6px}
+.card{background:var(--panel);border:1px solid #34312b;border-radius:16px;padding:15px;margin:12px 0}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+h1,h2,h3{margin:8px 0 12px}h1{font-size:25px}h2{font-size:19px;color:var(--gold)}
+.small{color:var(--muted);font-size:12px}.gold{color:var(--gold)}
+.song{display:flex;align-items:center;justify-content:space-between;gap:10px}.song button{flex:0 0 auto}
+.hidden{display:none!important}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.chordline{color:var(--gold);font-weight:750;white-space:pre-wrap;line-height:1.5}.lyricline{white-space:pre-wrap;line-height:1.7;min-height:1.7em}
+.rendered{font-size:19px;overflow-wrap:anywhere}.pair{margin:10px 0 13px}.pair .chordline{font-size:.85em;min-height:1.2em}
+select{min-width:100px}.empty{color:#aaa;text-align:center;padding:28px 10px}
+#liveView{position:fixed;inset:0;background:#090909;z-index:10;overflow:auto;padding:20px 18px 40px}
+#liveView .rendered{font-size:25px;max-width:900px;margin:25px auto}
+#liveView header{position:sticky;top:-20px;margin:-20px -18px 15px}
+#liveView .pair{margin:18px 0}
+footer{text-align:center;color:#777;font-size:11px;padding:25px}
+@media(min-width:700px){main{padding-top:26px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid .card{margin:0}}
+
+/* Editor visual de acordes: posiciones por carácter para conservar alineación. */
+.pair{overflow-x:auto;max-width:100%}
+.chord-track{position:relative;padding-top:27px;white-space:pre;width:max-content;min-width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.8}
+.chord-overlay{position:absolute;top:0;left:0;white-space:nowrap;font:700 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);transform:translateX(-2px)}
+.chord-track .lyricline{font:inherit;white-space:pre;min-height:1.8em}
+#visualCanvas{overflow-x:auto;border:1px solid #39352d;border-radius:12px;padding:8px;background:#151515}
+.visual-row{padding:5px 0 10px;border-bottom:1px solid #302d27}
+.visual-track{position:relative;padding-top:30px;white-space:pre;width:max-content;min-width:100%;font:17px/2.1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.visual-word{cursor:pointer;border-radius:3px;touch-action:manipulation}
+.visual-word:focus,.visual-word.target{outline:1px solid var(--gold);background:#37301e}
+.visual-chord{position:absolute;top:0;transform:translateX(-3px);white-space:nowrap;background:#302817;border:1px solid #806b3c;color:var(--gold);border-radius:7px;padding:0 5px;font:700 12px system-ui;min-height:23px}
+.visual-chord.selected{background:var(--gold);color:#17130b;border-color:var(--gold)}
+.visual-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.visual-actions>*{flex:1;min-width:120px}
+#visualHelp{line-height:1.5}
+@media(max-width:480px){.visual-track{font-size:15px}.visual-chord{font-size:11px}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">SELAH CHORDS</div><div class="tag">MUSIC • LYRICS • CHORDS</div></div><button id="langBtn" aria-label="Change language">ES / EN</button></header>
+<main>
+<div class="tabs">
+<button class="active" data-tab="library" id="tabLibrary">Mis canciones</button>
+<button data-tab="editor" id="tabEditor">＋ Nueva canción</button>
+<button data-tab="sets" id="tabSets">Repertorios</button>
+<button data-tab="importer" id="tabImporter">⇧ Importar</button>
+</div>
+<section id="library">
+<h1 id="libraryTitle">Mi repertorio</h1><div class="small" id="libraryHint">Tus canciones se guardan en este dispositivo.</div>
+<div class="toolbar"><input id="search" placeholder="Buscar canción..." aria-label="Buscar canción"></div>
+<div id="songList"></div>
+</section>
+<section id="editor" class="hidden">
+<h1 id="editorTitle">Nueva canción</h1>
+<div class="card">
+<label for="songTitle" id="labelTitle">Título</label><input id="songTitle" placeholder="Ej. Elías oraba">
+<div class="grid">
+<div><label for="originalKey" id="labelKey">Tonalidad original</label><select id="originalKey"></select></div>
+<div><label for="targetKey" id="labelTarget">Transportar a</label><select id="targetKey"></select></div>
+</div>
+<div class="toolbar"><button id="transposeBtn" class="primary">Transportar</button><button id="resetBtn">Volver al tono original</button></div>
+<label for="lyrics" id="labelLyrics">Letra con acordes</label>
+<textarea id="lyrics" spellcheck="false" placeholder="Escribe los acordes entre corchetes justo antes de la palabra donde deben aparecer.&#10;&#10;Ejemplo:&#10;[C]Cuando el pueblo [F]clama a Dios&#10;[G7]Él escucha nuestra [C]voz"></textarea>
+<div class="small" id="syntaxHint">Formato: escribe cada acorde entre [corchetes], justo antes de la palabra. Ej.: [C]Santo [G]eres.</div>
+<div class="toolbar">
+<button id="visualToggleBtn">✎ Editor visual de acordes</button>
+<label class="small" for="chordNotation" id="notationLabel" style="display:flex;align-items:center;gap:7px;margin:0">Cifrado
+<select id="chordNotation" style="width:auto;min-width:120px"><option value="intl">C · D · E</option><option value="latin">Do · Re · Mi</option></select>
+</label>
+</div>
+<div id="visualEditor" class="card hidden">
+<h2 id="visualTitle">Editor visual</h2>
+<p class="small" id="visualHelp">Toca una palabra para elegir dónde colocar un acorde. Toca un acorde existente para seleccionarlo y luego toca otra palabra para moverlo. Puedes actualizarlo o eliminarlo.</p>
+<div class="row"><input id="visualChordInput" placeholder="Acorde: C, Dm7, Gsus4, Bb/D"><button id="visualAddBtn" class="primary">Colocar / actualizar</button></div>
+<div id="visualCanvas" aria-label="Editor visual de letra y acordes"></div>
+<div class="visual-actions"><button id="visualDeleteBtn" disabled>Eliminar acorde seleccionado</button><button id="visualCloseBtn">Cerrar editor visual</button></div>
+<div class="small" id="visualStatus" aria-live="polite">Selecciona una palabra o un acorde.</div>
+</div>
+<div class="toolbar"><button id="saveBtn" class="primary">Guardar canción</button><button id="clearBtn">Limpiar</button></div>
+</div>
+<div class="card"><h2 id="previewTitle">Vista previa</h2><div id="preview" class="rendered small">Los acordes y la letra aparecerán aquí.</div></div>
+</section>
+<section id="sets" class="hidden">
+<h1 id="setsTitle">Repertorios por actividad</h1>
+<div class="card">
+<label id="setNameLabel" for="setName">Nombre del repertorio</label><input id="setName" placeholder="Ej. Culto de jóvenes">
+<div class="toolbar"><button id="createSetBtn" class="primary">Crear repertorio</button></div>
+<div id="setList"></div>
+</div>
+</section>
+
+<section id="importer" class="hidden">
+<h1>Importar canción</h1>
+<div class="card">
+<p class="small">Carga un PDF o una fotografía de una hoja musical. La detección automática es una ayuda inicial: revisa siempre los acordes y la letra antes de guardar.</p>
+<label for="importFile">Seleccionar PDF o imagen</label>
+<input id="importFile" type="file" accept="application/pdf,image/*">
+<div class="toolbar">
+<button id="autoImportBtn" class="primary">Detectar automáticamente</button>
+<button id="manualImportBtn">Importar manualmente</button>
+</div>
+<div id="importStatus" class="small" aria-live="polite">Formatos: PDF, JPG, PNG y WEBP.</div>
+<div id="filePreview" class="small"></div>
+<div id="pdfPages" class="small"></div>
+</div>
+<div class="card">
+<h2>Revisión y corrección</h2>
+<label for="importTitle">Título de la canción</label>
+<input id="importTitle" placeholder="Título detectado o escribe uno">
+<label for="importKey">Tonalidad original</label>
+<select id="importKey"></select>
+<label for="importLyrics">Letra y acordes detectados</label>
+<textarea id="importLyrics" placeholder="El texto reconocido aparecerá aquí. Corrige los acordes y colócalos entre corchetes, por ejemplo: [C]Santo [G]eres."></textarea>
+<div class="small">Formato editable de Selah Chords: coloca cada acorde entre corchetes antes de la palabra correspondiente. Ejemplo: [C]Santo [G]eres [Am]Señor.</div>
+<div class="toolbar"><button id="useImportedBtn" class="primary">Abrir en el editor</button><button id="clearImportBtn">Limpiar importación</button></div>
+</div>
+</section>
+
+</main>
+<div id="liveView" class="hidden">
+<header><div><div class="brand">SELAH CHORDS</div><div id="liveTitle" class="tag">MODO EN VIVO</div></div><button id="closeLive">Cerrar ✕</button></header>
+<div class="toolbar" style="max-width:900px;margin:auto"><button id="smaller">A−</button><button id="larger">A＋</button><button id="liveDown">− Tono</button><button id="liveUp">＋ Tono</button></div>
+<div id="liveContent" class="rendered"></div>
+</div>
+<footer>Selah Chords · Prototipo v3 · Tus datos se guardan localmente en este dispositivo.</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const chromatic=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const flatMap={'Db':'C#','Eb':'D#','Gb':'F#','Ab':'G#','Bb':'A#','Cb':'B','Fb':'E','E#':'F','B#':'C'};
+const keys=['C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B'];
+let songs=JSON.parse(localStorage.getItem('selahSongs')||'[]');
+let sets=JSON.parse(localStorage.getItem('selahSets')||'[]');
+let editingId=null,currentLive=null,liveShift=0,liveFont=25,lang='es';
+let baseLyrics='',baseKey='C',hasTransposed=false,selectedVisualChord=null,visualTarget=null;
+const words={
+es:{library:'Mis canciones',new:'＋ Nueva canción',sets:'Repertorios',my:'Mi repertorio',hint:'Tus canciones se guardan en este dispositivo.',search:'Buscar canción...',title:'Título',key:'Tonalidad original',target:'Transportar a',transpose:'Transportar',reset:'Volver al tono original',lyrics:'Letra con acordes',syntax:'Formato: escribe cada acorde entre [corchetes], justo antes de la palabra. Ej.: [C]Santo [G]eres.',save:'Guardar canción',clear:'Limpiar',preview:'Vista previa',empty:'Todavía no hay canciones. ¡Agrega la primera!',setTitle:'Repertorios por actividad',setName:'Nombre del repertorio',create:'Crear repertorio',live:'MODO EN VIVO',close:'Cerrar ✕',saved:'Canción guardada.',needTitle:'Escribe el título de la canción.',needSet:'Escribe un nombre para el repertorio.',addSong:'＋ Agregar canción',share:'Compartir',play:'Modo en vivo',remove:'Eliminar',deleteConfirm:'¿Eliminar esta canción?',noSongs:'No hay canciones en este repertorio.',visualToggle:'✎ Editor visual de acordes',visualTitle:'Editor visual',visualHelp:'Toca una palabra para elegir dónde colocar un acorde. Toca un acorde existente y luego otra palabra para moverlo. Puedes actualizarlo o eliminarlo.',visualAdd:'Colocar / actualizar',visualDelete:'Eliminar acorde seleccionado',visualClose:'Cerrar editor visual',visualStatus:'Selecciona una palabra o un acorde.',visualSelected:'Acorde seleccionado. Toca otra palabra para moverlo o actualízalo.',visualMoved:'Acorde movido a la palabra seleccionada.',visualPlaceHint:'Posición elegida. Escribe un acorde y pulsa «Colocar / actualizar».',visualPlaced:'Acorde colocado sobre la palabra seleccionada.',visualUpdated:'Acorde actualizado.',visualFirst:'Primero toca una palabra donde quieras colocar el acorde.',visualDeleted:'Acorde eliminado.',chordPlaceholder:'Acorde: C, Dm7, Gsus4, Bb/D',notation:'Cifrado'},
+en:{library:'My songs',new:'＋ New song',sets:'Setlists',my:'My songbook',hint:'Your songs are saved on this device.',search:'Search songs...',title:'Title',key:'Original key',target:'Transpose to',transpose:'Transpose',reset:'Reset to original key',lyrics:'Lyrics with chords',syntax:'Format: put each chord in [brackets] just before the word. Example: [C]Holy [G]are You.',save:'Save song',clear:'Clear',preview:'Preview',empty:'No songs yet. Add your first song!',setTitle:'Setlists by event',setName:'Setlist name',create:'Create setlist',live:'LIVE MODE',close:'Close ✕',saved:'Song saved.',needTitle:'Enter a song title.',needSet:'Enter a setlist name.',addSong:'＋ Add song',share:'Share',play:'Live mode',remove:'Delete',deleteConfirm:'Delete this song?',noSongs:'No songs in this setlist.',visualToggle:'✎ Visual chord editor',visualTitle:'Visual editor',visualHelp:'Tap a word to choose where to place a chord. Tap an existing chord, then another word to move it. You can update or delete it.',visualAdd:'Place / update',visualDelete:'Delete selected chord',visualClose:'Close visual editor',visualStatus:'Select a word or a chord.',visualSelected:'Chord selected. Tap another word to move it or update it.',visualMoved:'Chord moved to the selected word.',visualPlaceHint:'Position selected. Enter a chord and tap “Place / update”.',visualPlaced:'Chord placed above the selected word.',visualUpdated:'Chord updated.',visualFirst:'Tap a word first to choose where to place the chord.',visualDeleted:'Chord deleted.',chordPlaceholder:'Chord: C, Dm7, Gsus4, Bb/D',notation:'Notation'}
+};
+function t(k){return words[lang][k]||k}
+function store(){localStorage.setItem('selahSongs',JSON.stringify(songs));localStorage.setItem('selahSets',JSON.stringify(sets))}
+function fillKeys(){['originalKey','targetKey'].forEach(id=>{$(id).innerHTML=keys.map(k=>`<option>${k}</option>`).join('')});$('originalKey').value='C';$('targetKey').value='C'}
+fillKeys();
+function canonical(n){return flatMap[n]||n}
+const flatNotes=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+const latinSharp=['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si'];
+const latinFlat=['Do','Reb','Re','Mib','Mi','Fa','Solb','Sol','Lab','La','Sib','Si'];
+function parseChordSymbol(chord){
+ const value=String(chord||'').trim();
+ const rootMatch=value.match(/^([A-G](?:#|b)?)(.*)$/);
+ if(!rootMatch)return null;
+ const root=rootMatch[1],suffix=rootMatch[2];
+ let bass=null,quality=suffix;
+ const slash=suffix.lastIndexOf('/');
+ if(slash>=0){
+  const bassMatch=suffix.slice(slash+1).match(/^([A-G](?:#|b)?)(.*)$/);
+  if(bassMatch){bass=bassMatch[1];quality=suffix.slice(0,slash)+'/'+bassMatch[2]}
+ }
+ return {root,quality,bass,raw:value};
+}
+function noteIndex(note){const n=canonical(note);return chromatic.indexOf(n)}
+function preferFlatsForKey(key){return ['F','Bb','Eb','Ab','Db','Gb'].includes(key)}
+function transposeNote(note,shift,preferFlats=false){
+ const idx=noteIndex(note);if(idx<0)return note;
+ const next=(idx+((shift%12)+12))%12;
+ return (preferFlats?flatNotes:chromatic)[next];
+}
+function chordTranspose(chord,shift,targetKey='C'){
+ const parsed=parseChordSymbol(chord);if(!parsed)return chord;
+ const flats=preferFlatsForKey(targetKey)||parsed.root.includes('b');
+ const root=transposeNote(parsed.root,shift,flats);
+ const bass=parsed.bass?transposeNote(parsed.bass,shift,flats):null;
+ if(!bass)return root+parsed.quality;
+ const slash=parsed.quality.lastIndexOf('/');
+ const tail=parsed.quality.slice(slash+1);
+ return root+parsed.quality.slice(0,slash+1)+bass+tail;
+}
+function shiftText(text,shift,targetKey='C'){
+ return text.replace(/\[([^\]]+)\]/g,(all,ch)=>'['+chordTranspose(ch.trim(),shift,targetKey)+']');
+}
+function formatChord(chord){
+ if($('chordNotation')?.value!=='latin')return chord;
+ const parsed=parseChordSymbol(chord);if(!parsed)return chord;
+ const useFlats=parsed.root.includes('b');
+ const convert=note=>{const i=noteIndex(note);return i<0?note:(useFlats?latinFlat:latinSharp)[i]};
+ const root=convert(parsed.root),bass=parsed.bass?convert(parsed.bass):null;
+ if(!bass)return root+parsed.quality;
+ const slash=parsed.quality.lastIndexOf('/');
+ return root+parsed.quality.slice(0,slash+1)+bass+parsed.quality.slice(slash+1);
+}
+function parseChordLine(line){
+ let lyric='',pos=0;const chords=[];const re=/\[([^\]]+)\]/g;let m;
+ while((m=re.exec(line))!==null){lyric+=line.slice(pos,m.index);chords.push({index:lyric.length,chord:m[1].trim()});pos=re.lastIndex}
+ lyric+=line.slice(pos);return {text:lyric,chords};
+}
+function render(text,container){
+ container.innerHTML='';
+ text.split('\n').forEach(line=>{
+  const model=parseChordLine(line),pair=document.createElement('div');pair.className='pair';
+  if(!model.chords.length){const p=document.createElement('div');p.className='lyricline';p.textContent=model.text||' ';pair.appendChild(p)}
+  else{
+   const track=document.createElement('div');track.className='chord-track';
+   model.chords.forEach(c=>{const el=document.createElement('span');el.className='chord-overlay';el.style.left=c.index+'ch';el.textContent=formatChord(c.chord);track.appendChild(el)});
+   const lyric=document.createElement('div');lyric.className='lyricline';lyric.textContent=model.text||' ';track.appendChild(lyric);pair.appendChild(track);
+  }
+  container.appendChild(pair);
+ });
+}
+function preview(){render($('lyrics').value,$('preview'))}
+$('lyrics').addEventListener('input',()=>{if(!hasTransposed){baseLyrics=$('lyrics').value;baseKey=$('originalKey').value}selectedVisualChord=null;visualTarget=null;preview();if(!$('visualEditor').classList.contains('hidden'))renderVisualEditor()});
+$('originalKey').addEventListener('change',()=>{if(!hasTransposed)baseKey=$('originalKey').value});
+function showTab(tab){
+ document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+ $(tab).classList.remove('hidden');
+ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+ if(tab==='library')drawSongs();if(tab==='sets')drawSets();
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function drawSongs(){
+ const q=$('search').value.toLowerCase();$('songList').innerHTML='';
+ const filtered=songs.filter(s=>s.title.toLowerCase().includes(q));
+ if(!filtered.length){$('songList').innerHTML=`<div class="empty">${t('empty')}</div>`;return}
+ filtered.forEach(s=>{
+  const card=document.createElement('div');card.className='card song';
+  const info=document.createElement('div');info.innerHTML=`<strong>${escapeHtml(s.title)}</strong><div class="small">${escapeHtml(s.key||'C')} · ${s.lyrics.split('\\n').length} lines</div>`;
+  const actions=document.createElement('div');actions.className='row';
+  const open=document.createElement('button');open.textContent='Abrir';open.onclick=()=>editSong(s.id);
+  const live=document.createElement('button');live.textContent='▶';live.title=t('play');live.onclick=()=>startLive(s);
+  actions.append(open,live);card.append(info,actions);$('songList').append(card);
+ });
+}
+function escapeHtml(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function editSong(id){
+ const s=songs.find(x=>x.id===id);if(!s)return;editingId=id;baseLyrics=s.lyrics;baseKey=s.key||'C';hasTransposed=false;
+ $('songTitle').value=s.title;$('originalKey').value=baseKey;$('targetKey').value=baseKey;$('lyrics').value=s.lyrics;preview();
+ $('visualEditor').classList.add('hidden');selectedVisualChord=null;visualTarget=null;showTab('editor');$('editorTitle').textContent=s.title;
+}
+$('saveBtn').onclick=()=>{
+ const title=$('songTitle').value.trim();if(!title){alert(t('needTitle'));return}
+ const obj={id:editingId||Date.now().toString(),title,key:$('originalKey').value,lyrics:$('lyrics').value};
+ const i=songs.findIndex(s=>s.id===obj.id);if(i>=0)songs[i]=obj;else songs.push(obj);
+ editingId=obj.id;baseLyrics=obj.lyrics;baseKey=obj.key;hasTransposed=false;store();alert(t('saved'));showTab('library');
+};
+$('clearBtn').onclick=()=>{editingId=null;baseLyrics='';baseKey='C';hasTransposed=false;selectedVisualChord=null;visualTarget=null;$('visualEditor').classList.add('hidden');$('songTitle').value='';$('originalKey').value='C';$('targetKey').value='C';$('lyrics').value='';$('editorTitle').textContent=t('new');preview()};
+$('resetBtn').onclick=()=>{$('lyrics').value=baseLyrics;$('originalKey').value=baseKey;$('targetKey').value=baseKey;hasTransposed=false;preview();if(!$('visualEditor').classList.contains('hidden'))renderVisualEditor()};
+$('transposeBtn').onclick=()=>{
+ const from=chromatic.indexOf(canonical($('originalKey').value));const to=chromatic.indexOf(canonical($('targetKey').value));
+ if(from<0||to<0)return;
+ const shift=(to-from+12)%12;
+ $('lyrics').value=shiftText($('lyrics').value,shift,$('targetKey').value);
+ hasTransposed=true;$('originalKey').value=$('targetKey').value;
+ preview();if(!$('visualEditor').classList.contains('hidden'))renderVisualEditor();
+};
+$('search').oninput=drawSongs;
+function drawSets(){
+ $('setList').innerHTML='';
+ if(!sets.length){$('setList').innerHTML='<div class="empty">Crea un repertorio para organizar tus canciones.</div>';return}
+ sets.forEach(set=>{
+  const card=document.createElement('div');card.className='card';const h=document.createElement('h2');h.textContent=set.name;card.append(h);
+  const select=document.createElement('select');select.innerHTML='<option value="">'+t('addSong')+'</option>'+songs.map(s=>`<option value="${s.id}">${escapeHtml(s.title)}</option>`).join('');
+  select.onchange=()=>{if(select.value&&!set.songIds.includes(select.value)){set.songIds.push(select.value);store();drawSets()}};
+  card.append(select);
+  const list=document.createElement('ol');
+  set.songIds.forEach(id=>{const s=songs.find(x=>x.id===id);if(s){const li=document.createElement('li');li.textContent=s.title;list.append(li)}});
+  if(!list.children.length){const li=document.createElement('li');li.textContent=t('noSongs');list.append(li)}
+  card.append(list);$('setList').append(card);
+ });
+}
+$('createSetBtn').onclick=()=>{const name=$('setName').value.trim();if(!name){alert(t('needSet'));return}sets.push({id:Date.now().toString(),name,songIds:[]});$('setName').value='';store();drawSets()};
+function startLive(s){currentLive=s;liveShift=0;liveFont=25;updateLive();$('liveView').classList.remove('hidden')}
+function updateLive(){
+ const liveKey=transposeNote(currentLive.key||'C',liveShift,preferFlatsForKey(currentLive.key||'C'));
+ $('liveTitle').textContent=currentLive.title+' · '+liveKey;
+ $('liveContent').style.fontSize=liveFont+'px';
+ const shifted=shiftText(currentLive.lyrics,liveShift,liveKey);
+ render(shifted,$('liveContent'));
+}
+$('closeLive').onclick=()=>$('liveView').classList.add('hidden');
+$('larger').onclick=()=>{liveFont=Math.min(42,liveFont+2);updateLive()};
+$('smaller').onclick=()=>{liveFont=Math.max(15,liveFont-2);updateLive()};
+$('liveUp').onclick=()=>{liveShift=(liveShift+1)%12;updateLive()};
+$('liveDown').onclick=()=>{liveShift=(liveShift+11)%12;updateLive()};
+$('langBtn').onclick=()=>{lang=lang==='es'?'en':'es';document.documentElement.lang=lang;applyLanguage()};
+function applyLanguage(){
+ $('tabLibrary').textContent=t('library');$('tabEditor').textContent=t('new');$('tabSets').textContent=t('sets');if($('tabImporter'))$('tabImporter').textContent=lang==='es'?'⇧ Importar':'⇧ Import';
+ $('libraryTitle').textContent=t('my');$('libraryHint').textContent=t('hint');$('search').placeholder=t('search');
+ $('labelTitle').textContent=t('title');$('labelKey').textContent=t('key');$('labelTarget').textContent=t('target');
+ $('transposeBtn').textContent=t('transpose');$('resetBtn').textContent=t('reset');$('labelLyrics').textContent=t('lyrics');
+ $('syntaxHint').textContent=t('syntax');$('saveBtn').textContent=t('save');$('clearBtn').textContent=t('clear');
+ $('previewTitle').textContent=t('preview');$('setsTitle').textContent=t('setTitle');$('setNameLabel').textContent=t('setName');
+ $('createSetBtn').textContent=t('create');$('closeLive').textContent=t('close');$('visualToggleBtn').textContent=t('visualToggle');$('visualTitle').textContent=t('visualTitle');$('visualHelp').textContent=t('visualHelp');$('visualAddBtn').textContent=t('visualAdd');$('visualDeleteBtn').textContent=t('visualDelete');$('visualCloseBtn').textContent=t('visualClose');$('visualStatus').textContent=t('visualStatus');$('visualChordInput').placeholder=t('chordPlaceholder');$('notationLabel').childNodes[0].textContent=t('notation');drawSongs();drawSets();
+}
+$('setName').placeholder='Ej. Culto de jóvenes';
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+drawSongs();drawSets();preview();
+
+// Importación PDF / imagen: OCR asistido y revisión manual.
+const importKeySelect=$('importKey');
+if(importKeySelect) importKeySelect.innerHTML=keys.map(k=>`<option>${k}</option>`).join('');
+let selectedImportFile=null, extractedImportText='';
+$('importFile').addEventListener('change', async e=>{
+ selectedImportFile=e.target.files[0]||null;
+ $('filePreview').innerHTML='';$('pdfPages').innerHTML='';$('importStatus').textContent=selectedImportFile?`Archivo seleccionado: ${selectedImportFile.name}`:'No hay archivo seleccionado.';
+ if(!selectedImportFile)return;
+ if(selectedImportFile.type.startsWith('image/')){
+  const img=document.createElement('img');img.alt='Vista previa de la imagen seleccionada';img.style.maxWidth='100%';img.style.maxHeight='360px';img.style.display='block';img.style.marginTop='12px';
+  img.src=URL.createObjectURL(selectedImportFile);$('filePreview').append(img);
+ } else if(selectedImportFile.type==='application/pdf'){
+  const link=document.createElement('a');link.href=URL.createObjectURL(selectedImportFile);link.target='_blank';link.rel='noopener';link.textContent='Abrir PDF para revisar';link.style.color='var(--gold)';$('filePreview').append(link);
+ } else {$('importStatus').textContent='Formato no reconocido. Selecciona un PDF o una imagen.'}
+});
+function cleanOCRText(raw){
+ return raw.replace(/\r/g,'').replace(/[|]/g,'I').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+}
+function suggestChordMarkup(raw){
+ // Heurística conservadora: identifica acordes aislados o escritos al inicio de líneas.
+ // La revisión manual siempre es necesaria para preservar el alineamiento.
+ return cleanOCRText(raw).split('\n').map(line=>{
+  const trimmed=line.trim();
+  if(/^(?:[A-G](?:#|b)?(?:m|min|maj|dim|aug|sus|add)?\d*(?:\/[A-G](?:#|b)?)?)(?:\s|$)/.test(trimmed)){
+   const m=trimmed.match(/^([A-G](?:#|b)?(?:m|min|maj|dim|aug|sus|add)?\d*(?:\/[A-G](?:#|b)?)?)(?:\s+)?(.*)$/);
+   if(m)return `[${m[1]}]${m[2]}`;
+  }
+  return line;
+ }).join('\n');
+}
+function isOCRChordToken(value){
+ const token=String(value||'').trim().replace(/[.,;:!?]$/,'');
+ return /^[A-G](?:#|b)?(?:(?:maj|min|m|M|dim|aug|sus2|sus4|sus|add|no|°|ø|\+)?\d*(?:[#b]\d+)?)*(?:\/[A-G](?:#|b)?)?$/.test(token);
+}
+function markupFromOCRData(data){
+ const words=(data?.words||[]).filter(w=>w&&String(w.text||'').trim()&&w.bbox&&Number.isFinite(w.bbox.x0)&&Number.isFinite(w.bbox.y0));
+ if(words.length<3)return suggestChordMarkup(data?.text||'');
+ const sorted=words.slice().sort((a,b)=>((a.bbox.y0+a.bbox.y1)/2)-((b.bbox.y0+b.bbox.y1)/2)||a.bbox.x0-b.bbox.x0);
+ const rows=[];
+ sorted.forEach(word=>{
+  const box=word.bbox,cy=(box.y0+box.y1)/2,height=box.y1-box.y0;
+  let row=null;
+  for(let i=rows.length-1;i>=Math.max(0,rows.length-3);i--){
+   const tolerance=Math.max(10,Math.min(24,height*.65));
+   if(Math.abs(cy-rows[i].cy)<=tolerance){row=rows[i];break}
+  }
+  if(!row){row={cy,words:[]};rows.push(row)}
+  row.words.push(word);row.cy=row.words.reduce((sum,w)=>sum+(w.bbox.y0+w.bbox.y1)/2,0)/row.words.length;
+ });
+ rows.forEach(row=>row.words.sort((a,b)=>a.bbox.x0-b.bbox.x0));
+ rows.forEach(row=>{
+  const chordCount=row.words.filter(w=>isOCRChordToken(w.text)).length;
+  row.isChord=chordCount>=2&&chordCount/row.words.length>=.5;
+ });
+ const lyricRows=rows.filter(r=>!r.isChord),chordRows=rows.filter(r=>r.isChord);
+ if(!lyricRows.length||!chordRows.length)return suggestChordMarkup(data?.text||'');
+ const attached=new Map();
+ chordRows.forEach(chordRow=>{
+  const target=lyricRows.filter(r=>r.cy>chordRow.cy).sort((a,b)=>a.cy-b.cy)[0];
+  if(!target||target.cy-chordRow.cy>145)return;
+  if(!attached.has(target))attached.set(target,[]);
+  attached.get(target).push(...chordRow.words.filter(w=>isOCRChordToken(w.text)));
+ });
+ const output=[];
+ lyricRows.forEach((row,index)=>{
+  let cursor=0;const lyricWords=row.words.map(w=>{
+   const text=String(w.text).trim();const start=cursor;cursor+=text.length+1;
+   return {text,start,center:(w.bbox.x0+w.bbox.x1)/2};
+  });
+  const chords=(attached.get(row)||[]).map(w=>{
+   const center=(w.bbox.x0+w.bbox.x1)/2;
+   const nearest=lyricWords.reduce((best,item)=>Math.abs(item.center-center)<Math.abs(best.center-center)?item:best,lyricWords[0]);
+   return {index:nearest.start,chord:String(w.text).trim().replace(/[.,;:!?]$/,'')};
+  }).sort((a,b)=>a.index-b.index);
+  const positions={};chords.forEach(c=>(positions[c.index]||(positions[c.index]=[])).push(c.chord));
+  const line=lyricWords.map(w=>(positions[w.start]||[]).map(c=>'['+c+']').join('')+w.text).join(' ');
+  output.push(line);
+  if(index<lyricRows.length-1&&lyricRows[index+1].cy-row.cy>75)output.push('');
+ });
+ const marked=output.join('\n').trim();
+ return marked||suggestChordMarkup(data?.text||'');
+}
+async function runImageOCR(file){
+ if(!window.Tesseract)throw new Error('No se pudo cargar el motor OCR. Comprueba tu conexión a internet e inténtalo de nuevo.');
+ const result=await Tesseract.recognize(file,'eng',{logger:m=>{
+  if(m.status==='recognizing text')$('importStatus').textContent=`Reconociendo texto: ${Math.round((m.progress||0)*100)}%`;
+ }});
+ return result.data;
+}
+async function runPDFOCR(file){
+ if(!window.pdfjsLib)throw new Error('No se pudo cargar el lector PDF. Comprueba tu conexión a internet.');
+ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+ const bytes=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:bytes}).promise;
+ const pages=[];
+ $('pdfPages').textContent=`PDF de ${pdf.numPages} página(s). Procesando...`;
+ for(let n=1;n<=pdf.numPages;n++){
+  $('importStatus').textContent=`Procesando página ${n} de ${pdf.numPages}...`;
+  const page=await pdf.getPage(n);const viewport=page.getViewport({scale:1.8});
+  const canvas=document.createElement('canvas');canvas.width=viewport.width;canvas.height=viewport.height;
+  await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+  pages.push(await runImageOCR(blob));
+ }
+ $('pdfPages').textContent=`Se procesaron ${pdf.numPages} página(s). Revisa el texto reconocido.`;
+ return pages;
+}
+$('autoImportBtn').onclick=async()=>{
+ if(!selectedImportFile){$('importStatus').textContent='Primero selecciona un PDF o una imagen.';return}
+ try{
+  $('autoImportBtn').disabled=true;
+  $('importStatus').textContent='Preparando reconocimiento...';
+  const result=selectedImportFile.type==='application/pdf'?await runPDFOCR(selectedImportFile):[await runImageOCR(selectedImportFile)];
+  const pages=Array.isArray(result)?result:[result];
+  extractedImportText=cleanOCRText(pages.map(page=>page?.text||'').join('\n'));
+  const mapped=pages.map(markupFromOCRData).filter(Boolean).join('\n\n');
+  $('importLyrics').value=mapped||suggestChordMarkup(extractedImportText);
+  if(!$('importTitle').value)$('importTitle').value=selectedImportFile.name.replace(/\.[^.]+$/,'').replace(/[_-]/g,' ');
+  $('importStatus').textContent='Reconocimiento terminado. Los acordes se colocaron de forma aproximada según su posición en la imagen. Revisa y corrige cada acorde y palabra antes de guardar.';
+ }catch(err){$('importStatus').textContent=err.message||'No se pudo procesar el archivo. Puedes usar la importación manual.'}
+ finally{$('autoImportBtn').disabled=false}
+};
+$('manualImportBtn').onclick=()=>{
+ if(!selectedImportFile){$('importStatus').textContent='Selecciona un archivo primero.';return}
+ $('importStatus').textContent='Modo manual: consulta la vista previa del archivo y escribe o corrige la letra y los acordes en el área de revisión.';
+ $('importLyrics').focus();
+};
+$('useImportedBtn').onclick=()=>{
+ const title=$('importTitle').value.trim();
+ if(!title){alert('Escribe el título de la canción.');return}
+ editingId=null;baseLyrics=$('importLyrics').value;baseKey=$('importKey').value;hasTransposed=false;$('songTitle').value=title;$('originalKey').value=baseKey;$('targetKey').value=baseKey;
+ $('lyrics').value=$('importLyrics').value;$('editorTitle').textContent=title;preview();showTab('editor');
+};
+$('clearImportBtn').onclick=()=>{
+ selectedImportFile=null;extractedImportText='';$('importFile').value='';$('importTitle').value='';$('importLyrics').value='';
+ $('filePreview').innerHTML='';$('pdfPages').innerHTML='';$('importStatus').textContent='Formatos: PDF, JPG, PNG y WEBP.';
+};
+
+
+// Editor visual: cada acorde se guarda como una posición de carácter en su línea.
+function readVisualModels(){return $('lyrics').value.split('\n').map(parseChordLine)}
+function writeVisualModels(models){
+ const text=models.map(model=>{
+  const at={};model.chords.forEach(c=>{const k=Math.max(0,Math.min(model.text.length,c.index));(at[k]||(at[k]=[])).push(c.chord)});
+  let out='';for(let i=0;i<=model.text.length;i++){(at[i]||[]).forEach(ch=>out+='['+ch+']');if(i<model.text.length)out+=model.text[i]}
+  return out;
+ }).join('\n');
+ $('lyrics').value=text;preview();renderVisualEditor();
+}
+function renderVisualEditor(){
+ const canvas=$('visualCanvas');if(!canvas)return;canvas.innerHTML='';
+ const models=readVisualModels();
+ models.forEach((model,lineIndex)=>{
+  const row=document.createElement('div');row.className='visual-row';
+  const track=document.createElement('div');track.className='visual-track';
+  model.chords.forEach((ch,chordIndex)=>{
+   const chip=document.createElement('button');chip.type='button';chip.className='visual-chord';
+   if(selectedVisualChord&&selectedVisualChord.line===lineIndex&&selectedVisualChord.chordIndex===chordIndex)chip.classList.add('selected');
+   chip.style.left=ch.index+'ch';chip.textContent=formatChord(ch.chord);chip.title='Seleccionar '+ch.chord;
+   chip.onclick=()=>{selectedVisualChord={line:lineIndex,chordIndex};visualTarget={line:lineIndex,index:ch.index};$('visualChordInput').value=ch.chord;$('visualDeleteBtn').disabled=false;$('visualStatus').textContent=t('visualSelected');renderVisualEditor()};
+   track.appendChild(chip);
+  });
+  const tokenRe=/\S+|\s+/g;let match,cursor=0;
+  while((match=tokenRe.exec(model.text))!==null){
+   const token=match[0],start=cursor;cursor+=token.length;
+   if(/^\s+$/.test(token)){track.appendChild(document.createTextNode(token));continue}
+   const word=document.createElement('span');word.className='visual-word';word.tabIndex=0;word.textContent=token;
+   if(visualTarget&&visualTarget.line===lineIndex&&visualTarget.index===start)word.classList.add('target');
+   word.title='Colocar acorde sobre '+token;
+   const choose=()=>{
+    if(selectedVisualChord){
+     const modelsNow=readVisualModels(),picked=modelsNow[selectedVisualChord.line]?.chords[selectedVisualChord.chordIndex];
+     if(picked){picked.index=start;modelsNow[selectedVisualChord.line].chords.splice(selectedVisualChord.chordIndex,1);modelsNow[lineIndex].chords.push(picked);modelsNow[lineIndex].chords.sort((a,b)=>a.index-b.index);}
+     selectedVisualChord=null;visualTarget={line:lineIndex,index:start};$('visualDeleteBtn').disabled=true;$('visualStatus').textContent=t('visualMoved');writeVisualModels(modelsNow);
+    }else{visualTarget={line:lineIndex,index:start};$('visualStatus').textContent=t('visualPlaceHint');renderVisualEditor()}
+   };
+   word.onclick=choose;word.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}};
+   track.appendChild(word);
+  }
+  if(!model.text.trim()&&!model.chords.length){const empty=document.createElement('span');empty.className='small';empty.textContent='Línea vacía';track.appendChild(empty)}
+  row.appendChild(track);canvas.appendChild(row);
+ });
+ $('visualDeleteBtn').disabled=!selectedVisualChord;
+}
+$('visualToggleBtn').onclick=()=>{$('visualEditor').classList.toggle('hidden');if(!$('visualEditor').classList.contains('hidden')){selectedVisualChord=null;visualTarget=null;$('visualStatus').textContent=t('visualStatus');renderVisualEditor()}};
+$('visualCloseBtn').onclick=()=>$('visualEditor').classList.add('hidden');
+$('visualAddBtn').onclick=()=>{
+ const chord=$('visualChordInput').value.trim().replace(/^\[|\]$/g,'');
+ if(!parseChordSymbol(chord)){alert('Escribe un acorde válido, por ejemplo C, Dm7, Gsus4 o Bb/D.');return}
+ const models=readVisualModels();
+ if(selectedVisualChord){
+  const picked=models[selectedVisualChord.line]?.chords[selectedVisualChord.chordIndex];
+  if(!picked){selectedVisualChord=null;return}
+  picked.chord=chord;
+  if(visualTarget&&visualTarget.line===selectedVisualChord.line)picked.index=visualTarget.index;
+  models[selectedVisualChord.line].chords.sort((a,b)=>a.index-b.index);
+  selectedVisualChord=null;$('visualStatus').textContent=t('visualUpdated');
+ }else if(visualTarget){
+  if(!models[visualTarget.line])return;
+  models[visualTarget.line].chords.push({index:visualTarget.index,chord});models[visualTarget.line].chords.sort((a,b)=>a.index-b.index);
+  $('visualStatus').textContent=t('visualPlaced');
+ }else{$('visualStatus').textContent=t('visualFirst');return}
+ $('visualDeleteBtn').disabled=true;writeVisualModels(models);
+};
+$('visualDeleteBtn').onclick=()=>{
+ if(!selectedVisualChord)return;const models=readVisualModels();
+ models[selectedVisualChord.line]?.chords.splice(selectedVisualChord.chordIndex,1);
+ selectedVisualChord=null;$('visualDeleteBtn').disabled=true;$('visualStatus').textContent=t('visualDeleted');writeVisualModels(models);
+};
+$('chordNotation').onchange=()=>{preview();if(!$('visualEditor').classList.contains('hidden'))renderVisualEditor();if(currentLive&&!$('liveView').classList.contains('hidden'))updateLive()};
+
+</script>
+</body></html>

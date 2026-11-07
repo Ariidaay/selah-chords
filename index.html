@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#111111" id="themeColorMeta">
 <meta name="description" content="Selah Chords — letras, acordes y transporte de tonalidad.">
 <link rel="manifest" href="manifest.webmanifest">
 <title>Selah Chords</title>
 <style>
-:root{--bg:#111;--panel:#1c1c1c;--panel2:#242424;--gold:#d6b56d;--white:#f7f5ef;--muted:#aaa}
+:root{--bg:#111;--panel:#1c1c1c;--panel2:#242424;--gold:#d6b56d;--white:#f7f5ef;--muted:#aaa;--border:#34312b;--field:#181818;--button:#25231e;--header:#111;--live:#090909;--visual:#151515;--chip:#302817;--chip-border:#806b3c;--word-focus:#37301e;--empty:#aaa}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font:16px system-ui,-apple-system,Segoe UI,sans-serif}
 header{padding:18px 18px 12px;border-bottom:1px solid #333;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;background:#111;z-index:4}
 .brand{font-weight:800;letter-spacing:2px;color:var(--gold);font-size:20px}.tag{font-size:10px;letter-spacing:2px;color:#ccc}
@@ -51,10 +51,26 @@ footer{text-align:center;color:#777;font-size:11px;padding:25px}
 .visual-actions>*{flex:1;min-width:120px}
 #visualHelp{line-height:1.5}
 @media(max-width:480px){.visual-track{font-size:15px}.visual-chord{font-size:11px}}
+/* Light appearance: keep the gold identity while making every workspace readable. */
+:root[data-theme="light"]{--bg:#f5f2e9;--panel:#fffdf8;--panel2:#f0eadc;--white:#24221d;--muted:#706b60;--border:#ded6c5;--field:#fff;--button:#f3eddf;--header:#fffdf8;--live:#faf8f1;--visual:#fff;--chip:#f4ead0;--chip-border:#c5a45c;--word-focus:#f4e8c8;--empty:#706b60}
+:root[data-theme="light"] body{background:var(--bg);color:var(--white)}
+:root[data-theme="light"] header{background:var(--header);border-color:var(--border)}
+:root[data-theme="light"] button{background:var(--button);color:var(--white);border-color:var(--border)}
+:root[data-theme="light"] button.primary,:root[data-theme="light"] button.active{background:var(--gold);color:#17130b;border-color:var(--gold)}
+:root[data-theme="light"] input,:root[data-theme="light"] textarea,:root[data-theme="light"] select{background:var(--field);color:var(--white);border-color:var(--border)}
+:root[data-theme="light"] .card{background:var(--panel);border-color:var(--border)}
+:root[data-theme="light"] #liveView{background:var(--live)}
+:root[data-theme="light"] #visualCanvas{background:var(--visual);border-color:var(--border)}
+:root[data-theme="light"] .visual-chord{background:var(--chip);border-color:var(--chip-border);color:#72551a}
+:root[data-theme="light"] .visual-chord.selected{background:var(--gold);color:#17130b}
+:root[data-theme="light"] .visual-word:focus,:root[data-theme="light"] .visual-word.target{background:var(--word-focus)}
+:root[data-theme="light"] .visual-row{border-color:var(--border)}
+:root[data-theme="light"] footer{color:var(--muted)}
+
 </style>
 </head>
 <body>
-<header><div><div class="brand">SELAH CHORDS</div><div class="tag">MUSIC • LYRICS • CHORDS</div></div><button id="langBtn" aria-label="Change language">ES / EN</button></header>
+<header><div><div class="brand">SELAH CHORDS</div><div class="tag">MUSIC • LYRICS • CHORDS</div></div><div class="row" style="flex:0 0 auto;gap:7px"><button id="themeBtn" aria-label="Change appearance" title="Cambiar apariencia">☀️</button><button id="langBtn" aria-label="Change language">ES / EN</button></div></header>
 <main>
 <div class="tabs">
 <button class="active" data-tab="library" id="tabLibrary">Mis canciones</button>
@@ -150,6 +166,10 @@ const keys=['C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#'
 let songs=JSON.parse(localStorage.getItem('selahSongs')||'[]');
 let sets=JSON.parse(localStorage.getItem('selahSets')||'[]');
 let editingId=null,currentLive=null,liveShift=0,liveFont=25,lang='es';
+let theme=localStorage.getItem('selahTheme')||'dark';
+function applyTheme(){document.documentElement.dataset.theme=theme;$('themeBtn').textContent=theme==='dark'?'☀️':'🌙';$('themeBtn').title=theme==='dark'?(lang==='es'?'Cambiar a modo claro':'Switch to light mode'):(lang==='es'?'Cambiar a modo oscuro':'Switch to dark mode');$('themeBtn').setAttribute('aria-label',$('themeBtn').title);$('themeColorMeta').content=theme==='dark'?'#111111':'#f5f2e9';}
+$('themeBtn').onclick=()=>{theme=theme==='dark'?'light':'dark';localStorage.setItem('selahTheme',theme);applyTheme()};
+applyTheme();
 let baseLyrics='',baseKey='C',hasTransposed=false,selectedVisualChord=null,visualTarget=null;
 const words={
 es:{library:'Mis canciones',new:'＋ Nueva canción',sets:'Repertorios',my:'Mi repertorio',hint:'Tus canciones se guardan en este dispositivo.',search:'Buscar canción...',title:'Título',key:'Tonalidad original',target:'Transportar a',transpose:'Transportar',reset:'Volver al tono original',lyrics:'Letra con acordes',syntax:'Formato: escribe cada acorde entre [corchetes], justo antes de la palabra. Ej.: [C]Santo [G]eres.',save:'Guardar canción',clear:'Limpiar',preview:'Vista previa',empty:'Todavía no hay canciones. ¡Agrega la primera!',setTitle:'Repertorios por actividad',setName:'Nombre del repertorio',create:'Crear repertorio',live:'MODO EN VIVO',close:'Cerrar ✕',saved:'Canción guardada.',needTitle:'Escribe el título de la canción.',needSet:'Escribe un nombre para el repertorio.',addSong:'＋ Agregar canción',share:'Compartir',play:'Modo en vivo',remove:'Eliminar',deleteConfirm:'¿Eliminar esta canción?',noSongs:'No hay canciones en este repertorio.',visualToggle:'✎ Editor visual de acordes',visualTitle:'Editor visual',visualHelp:'Toca una palabra para elegir dónde colocar un acorde. Toca un acorde existente y luego otra palabra para moverlo. Puedes actualizarlo o eliminarlo.',visualAdd:'Colocar / actualizar',visualDelete:'Eliminar acorde seleccionado',visualClose:'Cerrar editor visual',visualStatus:'Selecciona una palabra o un acorde.',visualSelected:'Acorde seleccionado. Toca otra palabra para moverlo o actualízalo.',visualMoved:'Acorde movido a la palabra seleccionada.',visualPlaceHint:'Posición elegida. Escribe un acorde y pulsa «Colocar / actualizar».',visualPlaced:'Acorde colocado sobre la palabra seleccionada.',visualUpdated:'Acorde actualizado.',visualFirst:'Primero toca una palabra donde quieras colocar el acorde.',visualDeleted:'Acorde eliminado.',chordPlaceholder:'Acorde: C, Dm7, Gsus4, Bb/D',notation:'Cifrado'},
@@ -298,7 +318,7 @@ $('larger').onclick=()=>{liveFont=Math.min(42,liveFont+2);updateLive()};
 $('smaller').onclick=()=>{liveFont=Math.max(15,liveFont-2);updateLive()};
 $('liveUp').onclick=()=>{liveShift=(liveShift+1)%12;updateLive()};
 $('liveDown').onclick=()=>{liveShift=(liveShift+11)%12;updateLive()};
-$('langBtn').onclick=()=>{lang=lang==='es'?'en':'es';document.documentElement.lang=lang;applyLanguage()};
+$('langBtn').onclick=()=>{lang=lang==='es'?'en':'es';document.documentElement.lang=lang;applyLanguage();applyTheme()};
 function applyLanguage(){
  $('tabLibrary').textContent=t('library');$('tabEditor').textContent=t('new');$('tabSets').textContent=t('sets');if($('tabImporter'))$('tabImporter').textContent=lang==='es'?'⇧ Importar':'⇧ Import';
  $('libraryTitle').textContent=t('my');$('libraryHint').textContent=t('hint');$('search').placeholder=t('search');

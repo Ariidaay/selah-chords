@@ -29,10 +29,20 @@ h1,h2,h3{margin:8px 0 12px}h1{font-size:25px}h2{font-size:19px;color:var(--gold)
 .rendered{font-size:19px;overflow-wrap:anywhere}.pair{margin:10px 0 13px}.pair .chordline{font-size:.85em;min-height:1.2em}
 select{min-width:100px}.empty{color:#aaa;text-align:center;padding:28px 10px}
 #liveView{position:fixed;inset:0;background:#090909;z-index:10;overflow:auto;padding:20px 18px 40px}
-#liveView .rendered{font-size:25px;max-width:900px;margin:25px auto}
+#liveView .rendered{font-size:28px;max-width:900px;margin:22px auto;line-height:1.55;padding-bottom:24px}
 #liveView header{position:sticky;top:-20px;margin:-20px -18px 15px}
-#liveView .pair{margin:18px 0}
+#liveView .pair{margin:18px 0 24px;padding:0 0 14px;border-bottom:1px solid rgba(214,181,109,.18)}
+#liveView .pair:last-child{border-bottom:0}
+#liveView .pair .chord-track{padding-top:39px;line-height:1.65}
+#liveView .pair .chord-overlay{font:800 18px/1.2 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.2px;background:var(--chip);border:1px solid var(--chip-border);border-radius:7px;padding:3px 7px;color:var(--gold);transform:translateX(-3px);box-shadow:0 2px 5px rgba(0,0,0,.12)}
+#liveView .pair .lyricline{line-height:1.65}
+#liveView .pair{scrollbar-width:thin;scrollbar-color:var(--gold) transparent}
+#liveView .toolbar{position:sticky;top:62px;z-index:3;padding:8px 0;background:var(--live)}
+#liveView .toolbar button{font-weight:650;min-height:46px}
+@media(max-width:480px){#liveView{padding:14px 14px 32px}#liveView .rendered{font-size:28px;margin:18px auto}#liveView .pair .chord-overlay{font-size:18px;padding:3px 7px}#liveView .pair .chord-track{padding-top:39px}}
 footer{text-align:center;color:#777;font-size:11px;padding:25px}
+.drawer-shade{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:19}.side-drawer{position:fixed;z-index:20;inset:0 auto 0 0;width:min(82vw,320px);background:var(--panel);border-right:1px solid var(--border);padding:20px 16px;transform:translateX(-105%);transition:transform .22s ease;display:flex;flex-direction:column;box-shadow:12px 0 35px rgba(0,0,0,.18)}.side-drawer.open{transform:translateX(0)}.drawer-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--border)}.drawer-nav{display:grid;gap:8px;padding-top:18px}.drawer-nav button{display:flex;align-items:center;gap:14px;text-align:left;border:0;background:transparent;color:var(--white);padding:13px 12px;font-size:20px}.drawer-nav button span{font-size:16px}.drawer-nav button:active,.drawer-nav button:hover{background:var(--button)}.drawer-foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--border)}
+
 @media(min-width:700px){main{padding-top:26px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid .card{margin:0}}
 
 /* Editor visual de acordes: posiciones por carácter para conservar alineación. */
@@ -65,12 +75,13 @@ footer{text-align:center;color:#777;font-size:11px;padding:25px}
 :root[data-theme="light"] .visual-chord.selected{background:var(--gold);color:#17130b}
 :root[data-theme="light"] .visual-word:focus,:root[data-theme="light"] .visual-word.target{background:var(--word-focus)}
 :root[data-theme="light"] .visual-row{border-color:var(--border)}
-:root[data-theme="light"] footer{color:var(--muted)}
+:root[data-theme="light"] footer{color:var(--muted)}:root[data-theme="light"] .side-drawer{background:var(--panel)}:root[data-theme="light"] .drawer-nav button{color:var(--white)}
 
 </style>
 </head>
 <body>
-<header><div><div class="brand">SELAH CHORDS</div><div class="tag">MUSIC • LYRICS • CHORDS</div></div><div class="row" style="flex:0 0 auto;gap:7px"><button id="themeBtn" aria-label="Change appearance" title="Cambiar apariencia">☀️</button><button id="langBtn" aria-label="Change language">ES / EN</button></div></header>
+<header><div class="row" style="flex:0 0 auto;gap:10px"><button id="menuBtn" aria-label="Abrir menú" title="Menú">☰</button><div><div class="brand">SELAH CHORDS</div><div class="tag">MUSIC • LYRICS • CHORDS</div></div></div><div class="row" style="flex:0 0 auto;gap:7px"><button id="themeBtn" aria-label="Change appearance" title="Cambiar apariencia">☀️</button><button id="langBtn" aria-label="Change language">ES / EN</button></div></header>
+<div id="drawerShade" class="drawer-shade hidden"></div><aside id="sideDrawer" class="side-drawer" aria-hidden="true"><div class="drawer-head"><div><div class="brand">SELAH CHORDS</div><div class="small">Tu música, organizada</div></div><button id="drawerClose" aria-label="Cerrar menú">✕</button></div><nav class="drawer-nav"><button data-go="library">⌂ <span>Mis canciones</span></button><button data-go="sets">♫ <span>Mis repertorios</span></button><button data-go="favorites">♡ <span>Favoritos</span></button><button data-go="community">◎ <span>Comunidad Selah</span></button><button data-go="editor">＋ <span>Crear canción</span></button><button data-go="importer">⇧ <span>Importar PDF / foto</span></button></nav><div class="drawer-foot small">Cuenta gratuita · Comunidad compartida con Supabase</div></aside>
 <main>
 <div class="tabs">
 <button class="active" data-tab="library" id="tabLibrary">Mis canciones</button>
@@ -122,6 +133,10 @@ footer{text-align:center;color:#777;font-size:11px;padding:25px}
 </div>
 </section>
 
+<section id="favorites" class="hidden"><h1>Mis favoritos</h1><p class="small">Canciones de la comunidad que guardaste para encontrarlas rápidamente.</p><div id="favoriteList"></div></section>
+<section id="community" class="hidden"><h1>Comunidad Selah</h1><p class="small">Descubre canciones compartidas por otros músicos y publica tus propias transcripciones.</p>
+<div class="card" id="backendCard"><h2>Conectar tu cuenta gratuita</h2><p class="small">Para que las canciones sean visibles para todos, conecta un proyecto Supabase. La URL y la clave pública (anon/publishable) se guardan solamente en este dispositivo. Nunca introduzcas una clave secreta o service_role.</p><label for="sbUrl">Supabase Project URL</label><input id="sbUrl" type="url" placeholder="https://xxxxxxxx.supabase.co"><label for="sbKey">Supabase anon / publishable key</label><input id="sbKey" type="password" autocomplete="off" placeholder="sb_publishable_… o clave anon"><div class="toolbar"><button id="connectBackendBtn" class="primary">Conectar servicio</button><button id="disconnectBackendBtn">Desconectar</button></div><div class="small" id="backendStatus" aria-live="polite">Modo local: las publicaciones solo están en este dispositivo.</div><div class="divider"></div><h2>Cuenta gratuita</h2><label for="accountEmail">Correo electrónico</label><input id="accountEmail" type="email" autocomplete="email" placeholder="tu@email.com"><label for="accountPassword">Contraseña</label><input id="accountPassword" type="password" autocomplete="current-password" minlength="6" placeholder="Mínimo 6 caracteres"><div class="toolbar"><button id="signUpBtn">Crear cuenta</button><button id="signInBtn" class="primary">Iniciar sesión</button><button id="signOutBtn">Cerrar sesión</button></div><div id="accountStatus" class="small">No has iniciado sesión.</div></div>
+<div class="card"><h2>Publicar una canción</h2><p class="small">Selecciona una canción de tu biblioteca y añade el nombre que aparecerá como autor.</p><label for="publishSong">Canción</label><select id="publishSong"><option value="">Selecciona una canción</option></select><label for="authorName">Nombre del autor</label><input id="authorName" placeholder="Tu nombre o nombre ministerial" maxlength="70"><button id="publishBtn" class="primary">Publicar en Comunidad Selah</button><p class="small" id="publishStatus">Conecta Supabase e inicia sesión para publicar canciones accesibles a otros usuarios. También puedes guardar publicaciones localmente mientras configuras el servicio.</p></div><div class="toolbar"><input id="communitySearch" placeholder="Buscar en la comunidad..."></div><div id="communityList"></div></section>
 <section id="importer" class="hidden">
 <h1>Importar canción</h1>
 <div class="card">
@@ -155,7 +170,7 @@ footer{text-align:center;color:#777;font-size:11px;padding:25px}
 <div class="toolbar" style="max-width:900px;margin:auto"><button id="smaller">A−</button><button id="larger">A＋</button><button id="liveDown">− Tono</button><button id="liveUp">＋ Tono</button></div>
 <div id="liveContent" class="rendered"></div>
 </div>
-<footer>Selah Chords · Prototipo v3 · Tus datos se guardan localmente en este dispositivo.</footer>
+<footer>Selah Chords · Prototipo v7 · Comunidad compartida opcional mediante Supabase; favoritos personales locales.</footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
@@ -165,8 +180,11 @@ const flatMap={'Db':'C#','Eb':'D#','Gb':'F#','Ab':'G#','Bb':'A#','Cb':'B','Fb':'
 const keys=['C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B'];
 let songs=JSON.parse(localStorage.getItem('selahSongs')||'[]');
 let sets=JSON.parse(localStorage.getItem('selahSets')||'[]');
-let editingId=null,currentLive=null,liveShift=0,liveFont=25,lang='es';
+let communitySongs=JSON.parse(localStorage.getItem('selahCommunity')||'[]');
+let favorites=JSON.parse(localStorage.getItem('selahFavorites')||'[]');
+let editingId=null,currentLive=null,liveShift=0,liveFont=28,lang='es';
 let theme=localStorage.getItem('selahTheme')||'dark';
+let supabaseClient=null, currentUser=null, remoteCommunity=false;
 function applyTheme(){document.documentElement.dataset.theme=theme;$('themeBtn').textContent=theme==='dark'?'☀️':'🌙';$('themeBtn').title=theme==='dark'?(lang==='es'?'Cambiar a modo claro':'Switch to light mode'):(lang==='es'?'Cambiar a modo oscuro':'Switch to dark mode');$('themeBtn').setAttribute('aria-label',$('themeBtn').title);$('themeColorMeta').content=theme==='dark'?'#111111':'#f5f2e9';}
 $('themeBtn').onclick=()=>{theme=theme==='dark'?'light':'dark';localStorage.setItem('selahTheme',theme);applyTheme()};
 applyTheme();
@@ -176,7 +194,7 @@ es:{library:'Mis canciones',new:'＋ Nueva canción',sets:'Repertorios',my:'Mi r
 en:{library:'My songs',new:'＋ New song',sets:'Setlists',my:'My songbook',hint:'Your songs are saved on this device.',search:'Search songs...',title:'Title',key:'Original key',target:'Transpose to',transpose:'Transpose',reset:'Reset to original key',lyrics:'Lyrics with chords',syntax:'Format: put each chord in [brackets] just before the word. Example: [C]Holy [G]are You.',save:'Save song',clear:'Clear',preview:'Preview',empty:'No songs yet. Add your first song!',setTitle:'Setlists by event',setName:'Setlist name',create:'Create setlist',live:'LIVE MODE',close:'Close ✕',saved:'Song saved.',needTitle:'Enter a song title.',needSet:'Enter a setlist name.',addSong:'＋ Add song',share:'Share',play:'Live mode',remove:'Delete',deleteConfirm:'Delete this song?',noSongs:'No songs in this setlist.',visualToggle:'✎ Visual chord editor',visualTitle:'Visual editor',visualHelp:'Tap a word to choose where to place a chord. Tap an existing chord, then another word to move it. You can update or delete it.',visualAdd:'Place / update',visualDelete:'Delete selected chord',visualClose:'Close visual editor',visualStatus:'Select a word or a chord.',visualSelected:'Chord selected. Tap another word to move it or update it.',visualMoved:'Chord moved to the selected word.',visualPlaceHint:'Position selected. Enter a chord and tap “Place / update”.',visualPlaced:'Chord placed above the selected word.',visualUpdated:'Chord updated.',visualFirst:'Tap a word first to choose where to place the chord.',visualDeleted:'Chord deleted.',chordPlaceholder:'Chord: C, Dm7, Gsus4, Bb/D',notation:'Notation'}
 };
 function t(k){return words[lang][k]||k}
-function store(){localStorage.setItem('selahSongs',JSON.stringify(songs));localStorage.setItem('selahSets',JSON.stringify(sets))}
+function store(){localStorage.setItem('selahSongs',JSON.stringify(songs));localStorage.setItem('selahSets',JSON.stringify(sets));localStorage.setItem('selahCommunity',JSON.stringify(communitySongs));localStorage.setItem('selahFavorites',JSON.stringify(favorites))}
 function fillKeys(){['originalKey','targetKey'].forEach(id=>{$(id).innerHTML=keys.map(k=>`<option>${k}</option>`).join('')});$('originalKey').value='C';$('targetKey').value='C'}
 fillKeys();
 function canonical(n){return flatMap[n]||n}
@@ -251,7 +269,7 @@ function showTab(tab){
  document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
  $(tab).classList.remove('hidden');
  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
- if(tab==='library')drawSongs();if(tab==='sets')drawSets();
+ if(tab==='library')drawSongs();if(tab==='sets')drawSets();if(tab==='community')drawCommunity();if(tab==='favorites')drawFavorites();
 }
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 function drawSongs(){
@@ -267,6 +285,38 @@ function drawSongs(){
   actions.append(open,live);card.append(info,actions);$('songList').append(card);
  });
 }
+function openDrawer(){ $('sideDrawer').classList.add('open');$('drawerShade').classList.remove('hidden');$('sideDrawer').setAttribute('aria-hidden','false') }
+function closeDrawer(){ $('sideDrawer').classList.remove('open');$('drawerShade').classList.add('hidden');$('sideDrawer').setAttribute('aria-hidden','true') }
+$('menuBtn').onclick=openDrawer;$('drawerClose').onclick=closeDrawer;$('drawerShade').onclick=closeDrawer;
+document.querySelectorAll('.drawer-nav button').forEach(b=>b.onclick=()=>{const dest=b.dataset.go;closeDrawer();if(dest==='editor'){$('clearBtn').click();showTab('editor')}else showTab(dest)});
+function drawCommunity(){
+ const sel=$('publishSong');const old=sel.value;sel.innerHTML='<option value="">'+(lang==='es'?'Selecciona una canción':'Choose a song')+'</option>'+songs.map(s=>`<option value="${escapeHtml(s.id)}">${escapeHtml(s.title)}</option>`).join('');if(songs.some(s=>s.id===old))sel.value=old;
+ const q=($('communitySearch').value||'').toLowerCase();const list=$('communityList');list.innerHTML='';const matches=communitySongs.filter(x=>(x.title+' '+x.author).toLowerCase().includes(q));
+ if(!matches.length){list.innerHTML='<div class="empty">Todavía no hay publicaciones en este dispositivo. ¡Puedes iniciar la comunidad publicando una canción!</div>';return}
+ matches.forEach(item=>{const card=document.createElement('div');card.className='card';const top=document.createElement('div');top.className='song';const info=document.createElement('div');info.innerHTML=`<strong>${escapeHtml(item.title)}</strong><div class="small">${escapeHtml(item.key||'C')} · ${lang==='es'?'Por':'By'} ${escapeHtml(item.author||'Autor')}</div>`;const fav=document.createElement('button');fav.textContent=favorites.includes(item.id)?'♥':'♡';fav.title='Favorito';fav.onclick=()=>{favorites=favorites.includes(item.id)?favorites.filter(id=>id!==item.id):[...favorites,item.id];store();drawCommunity()};top.append(info,fav);const actions=document.createElement('div');actions.className='toolbar';const view=document.createElement('button');view.textContent=lang==='es'?'Ver canción':'View song';view.onclick=()=>{currentLive={title:item.title,key:item.key,lyrics:item.lyrics};liveShift=0;liveFont=28;updateLive();$('liveView').classList.remove('hidden')};actions.append(view);card.append(top,actions);list.append(card)});
+}
+function drawFavorites(){const list=$('favoriteList');list.innerHTML='';const items=communitySongs.filter(x=>favorites.includes(x.id));if(!items.length){list.innerHTML='<div class="empty">Aún no has guardado canciones favoritas.</div>';return}items.forEach(item=>{const card=document.createElement('div');card.className='card song';const info=document.createElement('div');info.innerHTML=`<strong>${escapeHtml(item.title)}</strong><div class="small">${escapeHtml(item.author||'Autor')}</div>`;const open=document.createElement('button');open.textContent='▶';open.onclick=()=>{currentLive=item;liveShift=0;liveFont=28;updateLive();$('liveView').classList.remove('hidden')};card.append(info,open);list.append(card)})}
+async function refreshCommunity(){
+ if(!supabaseClient){remoteCommunity=false;drawCommunity();return}
+ try{const {data,error}=await supabaseClient.from('community_songs').select('id,title,key,lyrics,author,published_at,author_id').order('published_at',{ascending:false}).limit(300);if(error)throw error;communitySongs=(data||[]).map(x=>({...x,publishedAt:x.published_at,sourceId:x.id}));remoteCommunity=true;store();drawCommunity();$('backendStatus').textContent=lang==='es'?'Conectado: biblioteca pública sincronizada.':'Connected: public library synced.'}
+ catch(e){$('backendStatus').textContent=(lang==='es'?'Error al cargar la comunidad: ':'Community load error: ')+e.message;drawCommunity()}
+}
+async function connectSupabase(){
+ const url=$('sbUrl').value.trim(),key=$('sbKey').value.trim();if(!/^https:\/\/[\w.-]+\.supabase\.co$/.test(url)||!key){alert(lang==='es'?'Introduce una Project URL y una clave pública válidas.':'Enter a valid Project URL and public key.');return}
+ localStorage.setItem('selahSupabaseUrl',url);localStorage.setItem('selahSupabaseKey',key);$('backendStatus').textContent=lang==='es'?'Conectando…':'Connecting…';
+ try{if(!window.supabase?.createClient){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';sc.onload=resolve;sc.onerror=()=>reject(new Error('No se pudo cargar la biblioteca Supabase.'));document.head.appendChild(sc)})}supabaseClient=window.supabase.createClient(url,key);const {data:{session}}=await supabaseClient.auth.getSession();currentUser=session?.user||null;updateAccountStatus();await refreshCommunity()}
+ catch(e){supabaseClient=null;$('backendStatus').textContent=(lang==='es'?'No se pudo conectar: ':'Could not connect: ')+e.message}
+}
+function updateAccountStatus(){ $('accountStatus').textContent=currentUser?(lang==='es'?'Sesión iniciada: ':'Signed in: ')+currentUser.email:(lang==='es'?'No has iniciado sesión.':'You are signed out.'); }
+async function accountAction(action){if(!supabaseClient){alert(lang==='es'?'Primero conecta Supabase.':'Connect Supabase first.');return}const email=$('accountEmail').value.trim(),password=$('accountPassword').value;if(!email||password.length<6){alert(lang==='es'?'Escribe un correo y una contraseña de al menos 6 caracteres.':'Enter an email and a password of at least 6 characters.');return}try{let result;if(action==='signup')result=await supabaseClient.auth.signUp({email,password});else result=await supabaseClient.auth.signInWithPassword({email,password});if(result.error)throw result.error;currentUser=result.data.user||null;updateAccountStatus();$('accountStatus').textContent=result.data.session?(lang==='es'?'Sesión iniciada correctamente.':'Signed in successfully.'):(lang==='es'?'Cuenta creada. Revisa tu correo para confirmar la dirección.':'Account created. Check your email to confirm.');await refreshCommunity()}catch(e){$('accountStatus').textContent=(lang==='es'?'Error de cuenta: ':'Account error: ')+e.message}}
+$('connectBackendBtn').onclick=connectSupabase;
+$('disconnectBackendBtn').onclick=()=>{supabaseClient=null;currentUser=null;remoteCommunity=false;localStorage.removeItem('selahSupabaseUrl');localStorage.removeItem('selahSupabaseKey');$('sbKey').value='';updateAccountStatus();$('backendStatus').textContent=lang==='es'?'Desconectado. Modo local.':'Disconnected. Local mode.';drawCommunity()};
+$('signUpBtn').onclick=()=>accountAction('signup');$('signInBtn').onclick=()=>accountAction('signin');$('signOutBtn').onclick=async()=>{if(supabaseClient)await supabaseClient.auth.signOut();currentUser=null;updateAccountStatus()};
+$('publishBtn').onclick=async()=>{const song=songs.find(x=>x.id===$('publishSong').value);const author=$('authorName').value.trim();if(!song){alert(lang==='es'?'Selecciona una canción.':'Choose a song.');return}if(!author){alert(lang==='es'?'Escribe el nombre del autor.':'Enter the author name.');return}
+ const record={title:song.title,key:song.key||'C',lyrics:song.lyrics,author};
+ if(supabaseClient&&currentUser){try{const {data,error}=await supabaseClient.from('community_songs').insert({...record,author_id:currentUser.id}).select().single();if(error)throw error;communitySongs.unshift({...data,publishedAt:data.published_at});store();drawCommunity();$('publishStatus').textContent=lang==='es'?'¡Canción publicada para toda la comunidad!':'Song published to the whole community!';return}catch(e){$('publishStatus').textContent=(lang==='es'?'No se pudo publicar: ':'Could not publish: ')+e.message;return}}
+ if(communitySongs.some(x=>x.sourceId===song.id)){alert(lang==='es'?'Esta canción ya está publicada localmente.':'This song is already published locally.');return}communitySongs.unshift({id:'local-'+Date.now(),sourceId:song.id,...record,publishedAt:new Date().toISOString()});store();drawCommunity();$('publishStatus').textContent=lang==='es'?'Guardada solo en este dispositivo. Conecta Supabase e inicia sesión para compartirla globalmente.':'Saved on this device only. Connect Supabase and sign in to share globally.'};
+$('communitySearch').oninput=drawCommunity;
 function escapeHtml(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function editSong(id){
  const s=songs.find(x=>x.id===id);if(!s)return;editingId=id;baseLyrics=s.lyrics;baseKey=s.key||'C';hasTransposed=false;
@@ -305,7 +355,7 @@ function drawSets(){
  });
 }
 $('createSetBtn').onclick=()=>{const name=$('setName').value.trim();if(!name){alert(t('needSet'));return}sets.push({id:Date.now().toString(),name,songIds:[]});$('setName').value='';store();drawSets()};
-function startLive(s){currentLive=s;liveShift=0;liveFont=25;updateLive();$('liveView').classList.remove('hidden')}
+function startLive(s){currentLive=s;liveShift=0;liveFont=28;updateLive();$('liveView').classList.remove('hidden')}
 function updateLive(){
  const liveKey=transposeNote(currentLive.key||'C',liveShift,preferFlatsForKey(currentLive.key||'C'));
  $('liveTitle').textContent=currentLive.title+' · '+liveKey;
@@ -314,8 +364,8 @@ function updateLive(){
  render(shifted,$('liveContent'));
 }
 $('closeLive').onclick=()=>$('liveView').classList.add('hidden');
-$('larger').onclick=()=>{liveFont=Math.min(42,liveFont+2);updateLive()};
-$('smaller').onclick=()=>{liveFont=Math.max(15,liveFont-2);updateLive()};
+$('larger').onclick=()=>{liveFont=Math.min(46,liveFont+2);updateLive()};
+$('smaller').onclick=()=>{liveFont=Math.max(18,liveFont-2);updateLive()};
 $('liveUp').onclick=()=>{liveShift=(liveShift+1)%12;updateLive()};
 $('liveDown').onclick=()=>{liveShift=(liveShift+11)%12;updateLive()};
 $('langBtn').onclick=()=>{lang=lang==='es'?'en':'es';document.documentElement.lang=lang;applyLanguage();applyTheme()};
@@ -326,11 +376,15 @@ function applyLanguage(){
  $('transposeBtn').textContent=t('transpose');$('resetBtn').textContent=t('reset');$('labelLyrics').textContent=t('lyrics');
  $('syntaxHint').textContent=t('syntax');$('saveBtn').textContent=t('save');$('clearBtn').textContent=t('clear');
  $('previewTitle').textContent=t('preview');$('setsTitle').textContent=t('setTitle');$('setNameLabel').textContent=t('setName');
- $('createSetBtn').textContent=t('create');$('closeLive').textContent=t('close');$('visualToggleBtn').textContent=t('visualToggle');$('visualTitle').textContent=t('visualTitle');$('visualHelp').textContent=t('visualHelp');$('visualAddBtn').textContent=t('visualAdd');$('visualDeleteBtn').textContent=t('visualDelete');$('visualCloseBtn').textContent=t('visualClose');$('visualStatus').textContent=t('visualStatus');$('visualChordInput').placeholder=t('chordPlaceholder');$('notationLabel').childNodes[0].textContent=t('notation');drawSongs();drawSets();
+ $('createSetBtn').textContent=t('create');$('closeLive').textContent=t('close');
+ document.querySelectorAll('.drawer-nav button').forEach((b,i)=>{const labels=lang==='es'?['Mis canciones','Mis repertorios','Favoritos','Comunidad Selah','Crear canción','Importar PDF / foto']:['My songs','My setlists','Favorites','Selah Community','Create song','Import PDF / photo'];const span=b.querySelector('span');if(span)span.textContent=labels[i]});
+ $('authorName').placeholder=lang==='es'?'Tu nombre o nombre ministerial':'Your name or ministry name';$('publishBtn').textContent=lang==='es'?'Publicar en Comunidad Selah':'Publish to Selah Community';$('communitySearch').placeholder=lang==='es'?'Buscar en la comunidad...':'Search the community...';$('visualToggleBtn').textContent=t('visualToggle');$('visualTitle').textContent=t('visualTitle');$('visualHelp').textContent=t('visualHelp');$('visualAddBtn').textContent=t('visualAdd');$('visualDeleteBtn').textContent=t('visualDelete');$('visualCloseBtn').textContent=t('visualClose');$('visualStatus').textContent=t('visualStatus');$('visualChordInput').placeholder=t('chordPlaceholder');$('notationLabel').childNodes[0].textContent=t('notation');drawSongs();drawSets();drawCommunity();drawFavorites();
 }
 $('setName').placeholder='Ej. Culto de jóvenes';
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
-drawSongs();drawSets();preview();
+drawSongs();drawSets();drawCommunity();drawFavorites();preview();
+if(localStorage.getItem('selahSupabaseUrl')){$('sbUrl').value=localStorage.getItem('selahSupabaseUrl');$('sbKey').value=localStorage.getItem('selahSupabaseKey')||'';connectSupabase()}
+
 
 // Importación PDF / imagen: OCR asistido y revisión manual.
 const importKeySelect=$('importKey');

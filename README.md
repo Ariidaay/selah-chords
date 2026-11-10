@@ -1,30 +1,44 @@
-# Selah Chords — prototipo v3
+# Selah Chords v7
 
-## Novedades de esta versión
-- Editor visual de acordes: toca una palabra para colocar un acorde; toca un acorde existente y luego otra palabra para moverlo; también permite actualizarlo o eliminarlo.
-- Posiciones de acordes guardadas como índices de caracteres dentro de cada línea, conservando la letra y los espacios originales.
-- Vista previa y modo en vivo alinean acordes sobre la letra con una pista monoespaciada y desplazamiento horizontal cuando la línea es larga.
-- Transporte mejorado: transpone únicamente la nota raíz y el bajo de los slash chords, preservando la calidad/extensión escrita (mayores, menores, maj7, m7, 7, sus, dim, aug, add, extensiones e inversiones expresadas como slash chords).
-- La tonalidad actual se actualiza al transportar; «Volver al tono original» restaura la letra y tonalidad con las que se abrió/creó la canción.
-- Selector de cifrado internacional (C, D, E) o latino (Do, Re, Mi) en la vista previa, editor visual y modo en vivo. Los datos se siguen guardando en cifrado internacional para facilitar el intercambio.
-- Se mantiene la importación PDF/fotografía con OCR experimental y revisión manual.
+Aplicación web progresiva (PWA) para organizar canciones, letras y acordes. Incluye menú lateral, modo oscuro/claro, editor visual, transporte, modo en vivo, importación experimental PDF/foto, biblioteca local, favoritos y una primera integración opcional con Supabase para la comunidad pública.
 
-## Funciones que conserva
-- Crear y guardar canciones localmente en el navegador.
-- Repertorios por actividad.
-- Modo en vivo con tamaño de letra y transporte por semitonos.
-- Interfaz básica ES/EN.
-- Base PWA para instalar desde Safari/Chrome al publicarse en HTTPS.
+## Abrir localmente / publicar
 
-## Probar
-1. Descomprime el ZIP.
-2. Abre `index.html` en un navegador para una prueba local.
-3. Para instalar como PWA, publica todos los archivos de esta carpeta en un servicio HTTPS.
-4. iPhone: abre el enlace en Safari > Compartir > Añadir a pantalla de inicio.
-5. Android: abre el enlace en Chrome > menú > Instalar aplicación.
+Sube el contenido de esta carpeta a la raíz (`/(root)`) del repositorio GitHub Pages. Mantén `index.html`, `manifest.webmanifest` y `sw.js` en la raíz. Luego abre la URL de GitHub Pages.
 
-## Limitaciones conocidas
-- El OCR usa Tesseract.js y PDF.js desde CDN; requiere conexión para cargar esas bibliotecas y los resultados musicales siempre deben revisarse manualmente. La colocación aproximada de acordes se probó con cajas de palabras obtenidas de Tesseract 5.5 en una fotografía de ejemplo: recuperó varios acordes, pero confundió algunos caracteres y omitió otros. La ejecución de Tesseract.js/PDF.js dentro del navegador no pudo certificarse en esta sesión porque las bibliotecas CDN no estaban accesibles; tampoco se ha probado una colección amplia de partituras.
-- El transporte conserva la calidad y extensiones del acorde tal como están escritas y mueve raíz/bajo. Se probaron acordes mayores, menores, séptimos, maj7, dim, aug, sus, extensiones y slash chords/inversiones; no realiza análisis armónico ni valida si cada símbolo es musicalmente convencional.
-- Los datos permanecen en el almacenamiento local de cada navegador/dispositivo. No hay cuentas, sincronización en la nube ni envío directo por WhatsApp en esta versión.
-- No está publicada en App Store ni Google Play; es un prototipo web/PWA.
+## Activar la Comunidad Selah compartida
+
+La comunidad compartida requiere configurar un proyecto gratuito de Supabase. Sin esta configuración, la app funciona en modo local y las publicaciones no son visibles a otros usuarios.
+
+1. Crea un proyecto en https://supabase.com/.
+2. En Supabase, abre **SQL Editor** y ejecuta todo el contenido de `SUPABASE_SETUP.sql`.
+3. Abre **Project Settings → API** (o **Connect**) y copia el **Project URL** y la clave pública **anon / publishable**.
+4. En Selah Chords → menú lateral → Comunidad Selah, pega esos dos valores y pulsa **Conectar servicio**.
+5. Crea una cuenta gratuita con correo y contraseña. Si Supabase requiere confirmación de correo, abre el mensaje y confirma antes de iniciar sesión.
+6. Selecciona una canción de tu biblioteca, escribe el nombre público del autor y pulsa **Publicar**.
+
+### Seguridad importante
+
+- Solo se debe introducir el Project URL y la clave pública `anon` / `publishable`.
+- **Nunca** introduzcas `service_role`, claves secretas ni contraseñas de Supabase en la aplicación.
+- La política RLS permite leer canciones publicadas a todos, pero solo usuarios autenticados pueden publicar; cada autor solo puede modificar o borrar sus propias publicaciones.
+- Las publicaciones creadas antes de conectar Supabase permanecen locales; no se suben automáticamente.
+- La búsqueda pública consulta hasta 300 publicaciones recientes en esta versión.
+- Los favoritos siguen guardándose localmente en este prototipo; la tabla SQL para sincronizarlos queda preparada para una siguiente iteración.
+- No hay revisión editorial previa: usuarios registrados pueden publicar. Deben publicar únicamente transcripciones propias o material con autorización/derechos suficientes. Añadir denuncia y moderación es una mejora pendiente antes de abrir ampliamente la comunidad.
+
+## Límites y funciones pendientes
+
+- Sin Supabase configurado, no existe sincronización ni publicación compartida.
+- La interfaz de cuenta necesita conexión a internet y el CDN de Supabase JS v2.
+- La confirmación de correo y las reglas de autenticación se administran desde el panel Supabase.
+- Favoritos multidispositivo, moderación/reportes, recuperación de contraseña y pruebas completas en Safari iOS/Android quedan pendientes.
+- OCR es experimental y siempre requiere revisión manual.
+
+## Archivos
+
+- `index.html`: aplicación.
+- `manifest.webmanifest`: metadatos PWA.
+- `sw.js`: service worker y caché.
+- `SUPABASE_SETUP.sql`: tablas y políticas RLS para la comunidad.
+- `PRUEBAS_v7.md`: comprobaciones de esta entrega.
